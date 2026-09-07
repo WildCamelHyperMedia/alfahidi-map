@@ -32,8 +32,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 4
 
 /* stage */
 #stage{position:relative;overflow:hidden}
-#mapwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:54px 28px 18px}
-#map{position:relative;aspect-ratio:16/9;max-width:100%;max-height:100%;width:100%;}
+#mapwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:54px 28px 18px;container-type:size}
+/* the map box is always exactly 16:9 — the largest one that fits the stage (letterboxed, never stretched) */
+#map{position:relative;aspect-ratio:16/9;width:100%;width:min(100cqw, 100cqh * 16 / 9)}
 #map img{position:absolute;inset:0;width:100%;height:100%;display:block}
 #zones{opacity:0;transition:opacity .4s;pointer-events:none}
 #zones.on{opacity:.85}
@@ -312,6 +313,11 @@ const CONTENT = {
 (function(){
   let lang="en", filter="all", sel=null, idleT=null, slide=0, nslides=1;
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+  // keep #map at a true 16:9 inside the stage on any screen (JS fallback for the CSS container-unit rule)
+  (function(){ const w=$("#mapwrap"), m=$("#map"); function fit(){ const cs=getComputedStyle(w);
+      const aw=w.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight), ah=w.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+      const W=Math.max(0,Math.min(aw, ah*16/9)); m.style.width=W+"px"; m.style.height=(W*9/16)+"px"; }
+    if(window.ResizeObserver) new ResizeObserver(fit).observe(w); window.addEventListener("resize",fit); fit(); })();
   const ui=()=>CONTENT.ui[lang];
   const actLabel={a1:"act1",a2:"act2",ax:"aux"};
   const CAM='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
