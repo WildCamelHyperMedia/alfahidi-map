@@ -66,7 +66,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 c
 #markers.route .mk{opacity:.28}
 #markers.route .mk.sel{opacity:1}
 .mk.big{font-size:15px}
-.entr{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%) scale(calc(var(--inv,1)*var(--esc,1)));transform-origin:50% 100%;pointer-events:none;z-index:2;transition:opacity .3s}
+.entr{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%) scale(calc(var(--esc,1)*var(--ek,1)));transform-origin:50% 100%;pointer-events:none;z-index:2;transition:opacity .3s}   /* --ek = map width / EREF, set in view.apply(): the label belongs to the drawing, so it shrinks with it when the panel opens and grows when you zoom in */
 .entr .pill{display:flex;align-items:center;gap:6px;background:var(--white);border:2px solid var(--navy);color:var(--navy);border-radius:999px;padding:5px 11px 5px 9px;font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;box-shadow:0 3px 10px rgba(31,54,71,.22);font-family:var(--font)}
 [dir=rtl] .entr .pill{letter-spacing:0;font-size:13px}
 .entr .pill svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
@@ -358,13 +358,14 @@ const CONTENT = {
   const view=(function(){
     const wrap=$("#mapwrap"), map=$("#map"), stage=$("#stage");
     const MIN=1, MAX=3, DTAP=2.2;
+    const EREF=1993.92;                      // #map's on-screen width in the reference view (1920x1080, panel closed) the entrance size was set in
     const HOME={x:0.545,y:0.605,s:1.34};     // start / idle view: centre of the art (fractions) + zoom. s:1 = whole art
     let s=1, tx=0, ty=0, raf=null, lastW=0, lastH=0;
     const size=()=>({W:map.offsetWidth,H:map.offsetHeight});            // untransformed (letterboxed) box
     function clampTo(v){ const {W,H}=size(); v.s=Math.min(MAX,Math.max(MIN,v.s)); v.tx=Math.min(0,Math.max(W-W*v.s,v.tx)); v.ty=Math.min(0,Math.max(H-H*v.s,v.ty)); return v; }
     function fromFrac(fx,fy,s2){ const {W,H}=size(); return clampTo({s:s2,tx:W/2-fx*W*s2,ty:H/2-fy*H*s2}); }
     function apply(){ const v=clampTo({s,tx,ty}); s=v.s; tx=v.tx; ty=v.ty; const {W,H}=size(); lastW=W; lastH=H;
-      map.style.transform=`translate(${tx.toFixed(2)}px,${ty.toFixed(2)}px) scale(${s.toFixed(4)})`; map.style.setProperty("--inv",((1/s)*Math.min(1,Math.pow(HOME.s/s,0.6))).toFixed(4));   /* shrink markers as we zoom in: 34px at home, ~21px at max zoom */
+      map.style.transform=`translate(${tx.toFixed(2)}px,${ty.toFixed(2)}px) scale(${s.toFixed(4)})`; map.style.setProperty("--inv",((1/s)*Math.min(1,Math.pow(HOME.s/s,0.6))).toFixed(4)); map.style.setProperty("--ek",(map.offsetWidth/EREF).toFixed(4));   /* shrink markers as we zoom in: 34px at home, ~21px at max zoom */
       const h=fromFrac(HOME.x,HOME.y,HOME.s); stage.classList.toggle("zoomed",Math.abs(s-h.s)>0.01||Math.abs(tx-h.tx)>2||Math.abs(ty-h.ty)>2); }
     function origin(){ const r=map.getBoundingClientRect(); return {x:r.left-tx,y:r.top-ty}; }
     function at(s2,px,py){ const o=origin(), x=px-o.x, y=py-o.y, mx=(x-tx)/s, my=(y-ty)/s;   // zoom to s2 keeping client point (px,py) still
@@ -408,6 +409,7 @@ const CONTENT = {
     // the map box changed size (drawer opened/closed, window resized): keep the same part of the art in the centre
     window.viewRefit=()=>{ const {W,H}=size(); if(lastW&&lastH&&(W!==lastW||H!==lastH)){ cancel(); const fx=(lastW/2-tx)/(lastW*s), fy=(lastH/2-ty)/(lastH*s); const v=fromFrac(fx,fy,s); s=v.s; tx=v.tx; ty=v.ty; } apply(); };
     window.addEventListener("resize",()=>window.viewRefit());
+    if(window.ResizeObserver) new ResizeObserver(()=>{ map.style.setProperty("--ek",(map.offsetWidth/EREF).toFixed(4)); }).observe(map);
     home(false); window.addEventListener("load",()=>home(false));
     return {reset,home,zoomBy,focus,get scale(){return s;}};
   })();
