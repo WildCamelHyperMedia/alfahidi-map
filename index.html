@@ -174,12 +174,14 @@ footer{display:flex;align-items:center;justify-content:flex-end;padding:0 clamp(
   background:linear-gradient(to bottom,rgba(10,18,24,.62) 0%,rgba(10,18,24,.12) 26%,rgba(10,18,24,0) 42%,rgba(10,18,24,.20) 66%,rgba(10,18,24,.72) 100%)}
 #attract .top{position:relative;z-index:2;padding:clamp(26px,3.2vh,44px) clamp(28px,2.4vw,52px)}
 #attract .top img{height:clamp(56px,7.4vh,86px);display:block;filter:brightness(0) invert(1) drop-shadow(0 2px 14px rgba(0,0,0,.45))}
-#attract .go{position:relative;z-index:2;display:flex;justify-content:center;align-items:center;gap:clamp(14px,1.6vw,26px);
-  padding:0 clamp(28px,2.4vw,52px) clamp(46px,7vh,86px);flex-wrap:wrap}
+#attract .go{position:relative;z-index:2;gap:clamp(14px,1.6vw,26px);
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);   /* equal tracks: both buttons take the width of the wider label, at every viewport */
+  width:fit-content;margin-inline:auto;
+  padding:0 clamp(28px,2.4vw,52px) clamp(46px,7vh,86px)}
 #attract .go button{font-family:var(--font);font-size:clamp(17px,1.45vw,22px);font-weight:600;color:#243646;   /* brand primary, PANTONE 7546 C */
   background:rgba(250,249,247,.95);border:1.5px solid #7A5135;border-radius:999px;                                /* brand tertiary brown, PANTONE 7568 C */
-  display:inline-flex;align-items:center;justify-content:center;line-height:1;
-  height:clamp(61px,6.75vh,73px);min-width:clamp(260px,16.7vw,340px);       /* both buttons identical, whatever the label — height pinned so the larger Arabic cannot grow its box */
+  display:inline-flex;align-items:center;justify-content:center;line-height:1;white-space:nowrap;
+  height:clamp(61px,6.75vh,73px);min-width:clamp(260px,16.7vw,340px);       /* height pinned so the larger Arabic cannot grow its box; the grid above equalises the widths */
   padding:0 clamp(24px,2vw,36px);cursor:pointer;letter-spacing:.03em;
   box-shadow:0 10px 34px rgba(0,0,0,.34);transition:transform .18s,background .18s;-webkit-tap-highlight-color:transparent}
 #attract .go button:active{transform:scale(.97);background:#fff}
