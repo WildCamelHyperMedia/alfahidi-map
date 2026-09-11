@@ -71,7 +71,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 c
 .mk{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:var(--white);border:2px solid var(--navy);color:var(--navy);
   display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16.2px;cursor:pointer;box-shadow:0 3px 10px rgba(31,54,71,.22);transition:scale .2s,opacity .3s,background .2s,color .2s;font-family:var(--font);
   transform:scale(var(--inv,1))}   /* --inv set on #map by view.apply(): 1/zoom x a shrink factor, so markers get smaller (not constant) as you zoom in past the home view */
-.mk::before{content:"";position:absolute;inset:-13px;border-radius:50%}   /* invisible touch halo: hit area stays ~60px even when the visual shrinks */
+.mk::before{content:"";position:absolute;inset:-13px;border-radius:50%;transform:scale(var(--mkh,1))}   /* invisible touch halo. --mkh (set with --inv in view.apply) cancels the marker shrink, so the tap target really is ~60px on screen at EVERY zoom, while the drawn circle still shrinks from 34px to 21px */
 #map.gest .mk,#map.gest .pulse{transition:none}
 .mk.a1{border-color:var(--act1);color:var(--act1)} .mk.a2{border-color:var(--act2);color:var(--act2)} .mk.ax{border-color:var(--sand);color:var(--sand)}
 .mk:hover{scale:1.08}
@@ -444,7 +444,7 @@ const CONTENT = {
     function clampTo(v){ const {W,H}=size(); v.s=Math.min(MAX,Math.max(MIN,v.s)); v.tx=Math.min(0,Math.max(W-W*v.s,v.tx)); v.ty=Math.min(0,Math.max(H-H*v.s,v.ty)); return v; }
     function fromFrac(fx,fy,s2){ const {W,H}=size(); return clampTo({s:s2,tx:W/2-fx*W*s2,ty:H/2-fy*H*s2}); }
     function apply(){ const v=clampTo({s,tx,ty}); s=v.s; tx=v.tx; ty=v.ty; const {W,H}=size(); lastW=W; lastH=H;
-      map.style.transform=`translate(${tx.toFixed(2)}px,${ty.toFixed(2)}px) scale(${s.toFixed(4)})`; map.style.setProperty("--inv",((1/s)*Math.min(1,Math.pow(HOME.s/s,0.6))).toFixed(4)); map.style.setProperty("--ek",(map.offsetWidth/EREF).toFixed(4));   /* shrink markers as we zoom in: 34px at home, ~21px at max zoom */
+      map.style.transform=`translate(${tx.toFixed(2)}px,${ty.toFixed(2)}px) scale(${s.toFixed(4)})`; const shrink=Math.min(1,Math.pow(HOME.s/s,0.6)); map.style.setProperty("--inv",((1/s)*shrink).toFixed(4)); map.style.setProperty("--mkh",(1/shrink).toFixed(4)); map.style.setProperty("--ek",(map.offsetWidth/EREF).toFixed(4));   /* shrink the drawn marker as we zoom in: 34px at home, ~21px at max zoom - but --mkh keeps the invisible tap halo a constant ~60px on screen */
       const h=fromFrac(HOME.x,HOME.y,HOME.s); stage.classList.toggle("zoomed",Math.abs(s-h.s)>0.01||Math.abs(tx-h.tx)>2||Math.abs(ty-h.ty)>2); }
     function origin(){ const r=map.getBoundingClientRect(); return {x:r.left-tx,y:r.top-ty}; }
     function at(s2,px,py){ const o=origin(), x=px-o.x, y=py-o.y, mx=(x-tx)/s, my=(y-ty)/s;   // zoom to s2 keeping client point (px,py) still
